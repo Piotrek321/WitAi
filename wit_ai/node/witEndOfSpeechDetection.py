@@ -12,12 +12,12 @@ import time
 from rospy.numpy_msg import numpy_msg
 import numpy
 from wit_ai.msg import Num
-from recording import record
+from functions/recording import record
 from sendSoundToWit import queryAudio, query
-czasMowy = 4
+czasMowy = 1
 
-#key - Server Access Token from Your wit.ai account
-key = 'THAKYMA767MXNDXJOZXDUBGHGFIRW5ER'
+#key - Client Access Token from Your wit.ai account
+key = 'ND46SFSJIBGOHRDGCXROO3365KHAYOT3'
 
 #convert adjective to number. It is used in function that repeats commands
 def czyKoncoweKomendy (arg):

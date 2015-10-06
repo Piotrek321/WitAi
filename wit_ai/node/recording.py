@@ -15,7 +15,7 @@ def record(czasNagrywania, numerPliku):
 	w.setnchannels(1)
 	w.setsampwidth(2)
 	w.setframerate(RATE)
-	print "Nagrywanie"
+	#print "Nagrywanie"
 
 
 	for x in range(int(RATE / CHUNK * czasNagrywania)):
@@ -24,5 +24,5 @@ def record(czasNagrywania, numerPliku):
 	    #print numpy.abs(a).mean()
 	    w.writeframes(data)
 
-	print "Koniec nagrywania"
+	#print "Koniec nagrywania"
 	return w.writeframes(data)

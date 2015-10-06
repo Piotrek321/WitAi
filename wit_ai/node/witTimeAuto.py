@@ -5,19 +5,19 @@ import wit
 import json
 import subprocess
 import rospy
-
 import re
 import urllib, pycurl, os
 from std_msgs.msg import String
 import time
 from rospy.numpy_msg import numpy_msg
 import numpy
-
 from wit_ai.msg import Num
 
-czasMowy = 4
-key = 'THAKYMA767MXNDXJOZXDUBGHGFIRW5ER'
+czasMowy = 1
+#key - Client Access Token from Your wit.ai account
+key = 'ND46SFSJIBGOHRDGCXROO3365KHAYOT3'
 
+#convert adjective to number. It is used in function that repeats commands
 def czyKoncoweKomendy (arg):
     return {
         'poprzednią': -1,
@@ -36,8 +36,8 @@ def czyKoncoweKomendy (arg):
 
 
 
-
-def konwertujLiczbe (liczba):
+#convert text to number.
+def textToNumber (number):
     return {
         'jeden': 1,
         'pierwszy': 1,
@@ -83,8 +83,6 @@ def konwertujLiczbe (liczba):
 
     }.get(liczba,False)
 
-
-
 def witVoice():
     wit.voice_query_start(key)
     time.sleep(czasMowy)
@@ -92,19 +90,20 @@ def witVoice():
 
     return response
 
-tablicaDoPublikowania = ['intent','numer','ktoreKomendy', 'kolor', 'jak', 'pewnosc', 'kierunek', 'jakaFunkcja', 'tekst']
+tableToPublish = [ 'intent','number','whichCommands', 'colour', 'howFast', 'confidence', 'direction', 'whichFunction', 'text', 'Auto']
+
 
 if __name__ == "__main__":
 
-
     wit.init()
-
-    pub = rospy.Publisher('chatter', Num,queue_size=10)
+    pub = rospy.Publisher('chatter', Num, queue_size=10)
     rospy.init_node('talker', anonymous=True)
     rate = rospy.Rate(10) # 10hz
 
 
     while not rospy.is_shutdown(): #While(True)
+
+
 
         jsonResponse = witVoice()
         if not jsonResponse:
@@ -116,95 +115,91 @@ if __name__ == "__main__":
             print ("Try intent")
 
             try:
-                numer=dataDict["outcomes"][0]["entities"]['numer'][0]['value']
-                print ("Try numer")
-                if(numer):
-                    if not(numer.isdigit()):
-                        numer = konwertujLiczbe(numer)
-                        print ("Konwersja numer")
+                number=dataDict["outcomes"][0]["entities"]['number'][0]['value']
+                print ("Try number")
+                if(number):
+                    if not(number.isdigit()):
+                        number = textToNumber(number)
+                        print ("Konwersja number")
 
             except:
-                print ("Except numer")
+                print ("Except number")
                 if(str(intent) == 'Zmiana_kontroli'):
-                    print("Zmiana kontroli ale brak numeru")
-                    numer = 0
+                    print("Zmiana kontroli ale brak numberu")
+                    number = 0
                 else:
-                    numer = 1
+                    number = 1
 
             try:
-                ktoreKomendy = dataDict["outcomes"][0]["entities"]['ktore'][0]['value']
-                if (ktoreKomendy):
-                    print("Ktore komendy: " + str(ktoreKomendy))
-                    ktoreKomendy = czyKoncoweKomendy(str(ktoreKomendy))
+                whichCommands = dataDict["outcomes"][0]["entities"]['ktore'][0]['value']
+                if (whichCommands):
+                    print("Ktore komendy: " + str(whichCommands))
+                    whichCommands = czyKoncoweKomendy(str(whichCommands))
                 else:
-                    ktoreKomendy = 3 #ostatnie
+                    whichCommands = 3 #ostatnie
 
             except:
-                ktoreKomendy = 3
-                print ("Bląd przy ktoreKomendy")
+                whichCommands = 3
+                print ("Bląd przy whichCommands")
 
             try:
-                jak = dataDict["outcomes"][0]["entities"]['jak'][0]['value']
+                howFast = dataDict["outcomes"][0]["entities"]['howFast'][0]['value']
             except:
-                jak = 'normalnie'
+                howFast = 'normalnie'
 
             try:
-                kolor = dataDict["outcomes"][0]["entities"]['kolor'][0]['value']
+                colour = dataDict["outcomes"][0]["entities"]['colour'][0]['value']
             except:
-                kolor = 'Brak koloru'
-                if(intent == 'ZmienKolor'):
-                    kolor = 'kolejny'
+                colour = 'Brak colouru'
+                if(intent == 'Zmiencolour'):
+                    colour = 'kolejny'
             try:
-                pewnosc= dataDict["outcomes"][0]["confidence"]
-                pewnosc = pewnosc * 100
+                confidence= dataDict["outcomes"][0]["confidence"]
+                confidence = confidence * 100
             except:
-                pewnosc = 'Null'
+                confidence = 'Null'
 
             try:
-                kierunek= dataDict["outcomes"][0]["entities"]['kierunek'][0]['value']
+                direction= dataDict["outcomes"][0]["entities"]['direction'][0]['value']
             except:
-                kierunek = 'Null'
+                direction = 'Null'
 
             try:
-                jakaFunkcja= dataDict["outcomes"][0]["entities"]['jakaFunkcja'][0]['value']
+                whichFunction= dataDict["outcomes"][0]["entities"]['whichFunction'][0]['value']
             except:
-                jakaFunkcja = 'Null'
+                whichFunction = 'Null'
 
             try:
                 "Print text"
-                tekst= dataDict["outcomes"][0]["_text"]
-                print tekst
+                text= dataDict["outcomes"][0]["_text"]
+                print text
             except:
-                tekst = 'Null'
+                text = 'Null'
 
 
 
-            tablicaDoPublikowania[0] = intent
-            tablicaDoPublikowania[1] = str(numer)
-            tablicaDoPublikowania[2] = str(ktoreKomendy)
-            tablicaDoPublikowania[3] = kolor
-            tablicaDoPublikowania[4] = jak
-            tablicaDoPublikowania[5] = str(pewnosc)
-            tablicaDoPublikowania[6] = kierunek
-            tablicaDoPublikowania[7] = jakaFunkcja
-            tablicaDoPublikowania[8] = tekst
+            tableToPublish[0] = intent
+            tableToPublish[1] = str(number)
+            tableToPublish[2] = str(whichCommands)
+            tableToPublish[3] = colour
+            tableToPublish[4] = howFast
+            tableToPublish[5] = str(confidence)
+            tableToPublish[6] = direction
+            tableToPublish[7] = whichFunction
+            tableToPublish[8] = text
             print "intent: " + intent
 
 
 
 
         except:
-            tablicaDoPublikowania[0] = "NULL"
+            tableToPublish[0] = "NULL"
             print('\n' "Intent: Null" '\n')
 
 
         msg_to_send= Num()
-        msg_to_send.some_strings = tablicaDoPublikowania
+        msg_to_send.some_strings = tableToPublish
         rospy.loginfo(msg_to_send)
         print (" ")
         pub.publish(msg_to_send)
         rate.sleep()
-
-
-
-    wit.close()

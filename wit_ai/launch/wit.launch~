@@ -1,0 +1,10 @@
+<launch>
+
+
+   <node name="listener" pkg="wit_ai" type="listener.py" output="screen"/>
+
+
+   <node name="talker" pkg="wit_ai" type="talker.py" output="screen"/>
+
+
+</launch>
